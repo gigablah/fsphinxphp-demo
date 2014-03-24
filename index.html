@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en">  <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>FSphinx demo</title>
+  <meta name="description" content="FSphinx extends the PHP Sphinx API to easily perform faceted search.">
+  <meta name="author" content="Chris Heng">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <link rel="stylesheet" href="css/bootstrap-responsive.css">
+  <link rel="stylesheet" href="css/style.css?">
+  <link rel="stylesheet" href="css/jquery.tagit.css?">
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+      <h1 id="logo">FSphinx <span><span>Faceted</span> Search</span></h1>
+      <p class="description">
+        <noscript>
+        </noscript>
+        Click a query term to toggle it on and off. Click on the <span class="close">&times;</span> or press backspace to remove terms.
+      </p>
+    </div>
+  </header>
+  <section id="search">
+    <div id="search-bar">
+      <div class="container">
+        <div class="row">
+          <div class="span12">
+            <form id="form-query" class="form-search">
+              <input class="tagit" id="query" value="" />
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div id="container" class="container">
+    <section id="results" data-toggle="search">
+      <div class="row">
+        <div class="span9 pull-right">
+          <div id="pagination" class="pagination"><!--//paginator//--></div>
+          <div id="content"><!--//movies//--></div>
+        </div>
+        <aside class="span3 pull-left" id="facets"><!--//facets//--></aside>
+      </div>
+    </section>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <p>Assembled by Chris Heng using HTML5 Boilerplate, Bootstrap 2.0, Backbone.js, customized jQuery Tag-it</p>
+    </div>
+  </footer>
+  <script src="js/modernizr.js"></script>
+  <script src="js/json2.js"></script>
+  <script src="js/jquery.js"></script>
+  <script src="js/underscore.js"></script>
+  <script src="js/backbone.js"></script>
+  <script src="js/jquery.ui.core.js"></script>
+  <script src="js/jquery.ui.widget.js"></script>
+  <script src="js/jquery.effects.core.js"></script>
+  <script src="js/jquery.effects.blind.js"></script>
+  <script src="js/jquery.ajaxmanager.js"></script>
+  <script src="js/jquery.waypoints.js"></script>
+  <script src="js/jquery.tagit.js?"></script>
+  <script src="js/fsphinx.js?"></script>
+  <script src="js/fsphinx.movie.js?"></script>
+  <script src="js/fsphinx.facet.js?"></script>
+  <script src="js/fsphinx.paginator.js?"></script>
+  <script src="js/data.js?"></script>
+  
+  <script type="text/template" id="template-index">
+    <h2>Faceted Search</h2>
+    <p>Enter search terms or click a facet to start searching.</p>
+  </script>
+  <script type="text/template" id="template-movie">
+    <div class="span9 movie">
+      <h3>{{title}}</h3>
+      <div class="tags"><!--//tags//--></div>
+      <p class="description">{{plot}}</p>
+    </div>
+  </script>
+  <script type="text/template" id="template-movietag">
+    <a href="#" data-term="{{term}}" data-id="{{id}}" data-facet="{{facet}}" class="label tag">{{term}}</a>
+  </script>
+  <script type="text/template" id="template-facetpanel">
+    <div class="nav-header">
+      <div class="btn-toolbar">
+        <span><i class="icon-{{id}}"></i> {{name}}</span>
+          <!--<div class="btn-group">
+            <a class="btn small active" href="#"><i class="icon th-list"></i></a>
+            <a class="btn small" href="#"><i class="icon tags"></i></a>
+          </div>-->
+      </div>
+    </div>
+    <ul class="nav nav-tabs nav-stacked"><!--//terms//--></ul>
+  </script>
+  <script type="text/template" id="template-facetterm">
+    <span class="term">{{term}}</span><span class="term-count label pull-right">{{count}}</span>
+    <span class="term-fill" data-fill="{{percent}}" style="width: 0%"></span>
+  </script>
+  <script>
+    console = console || {
+      log: function() {}
+    };
+    (function(){
+      var all = $.event.props,
+        len = all.length,
+        res = [];
+      while (len--) {
+        var el = all[len];
+        if (el != 'layerX' && el != 'layerY') res.push(el);
+      }
+      $.event.props = res;
+    }());
+    $(document).ready(function() {
+      _.templateSettings = {
+        evaluate : /\{\[([\s\S]+?)\]\}/g,
+        interpolate: /\{\{([\s\S]+?)\}\}/g
+      };
+      var ajaxQueue = $.manageAjax.create('fsphinx', {
+        queue: 'clear',
+        abortOld: true,
+        maxRequests: 3,
+        cacheResponse: false
+      });
+      FSphinx.init({
+        el: '#content',
+        input: '#query',
+        queue: ajaxQueue,
+        render: true,
+        data: bootstrap_data
+      });
+      $.waypoints.settings.scrollThrottle = 30;
+      $('#search').waypoint(function(event, direction) {
+        $(this).find('#search-bar').toggleClass('navbar-fixed-top', direction === 'down');
+        event.stopPropagation();
+      });
+    });
+  </script>
+  
+  <!--<script> // Change UA-XXXXX-X to be your site's ID
+    window._gaq = [['_setAccount','UAXXXXXXXX1'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>-->
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+    <script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+  <![endif]-->
+
+</body>
+</html>
